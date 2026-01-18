@@ -3,16 +3,26 @@ import { IndianRupee, Calendar, CreditCard } from "lucide-react";
 import { gsap } from "gsap";
 
 import { useUserStore } from "../store/register.store";
+import { useAuthStore } from "../store/auth.store";
+
+import { loadRazorpay } from "../utils/loadRazorpay";
+import Axios from "../utils/axios";
 
 function PayRDpage() {
   const starsRef = useRef(null);
+
   const [selectedRD, setSelectedRD] = useState(null);
   const [payAmount, setPayAmount] = useState("");
   const [payDate, setPayDate] = useState("");
   const [rdList, setRdList] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const { authUser } = useAuthStore();
   const { userAccountNumber, getRdData } = useUserStore();
 
-  //  Intial useEffect to get rd data from the backend
+  /* =========================
+     LOAD RD DATA
+  ========================== */
   useEffect(() => {
     const loadRD = async () => {
       try {
@@ -24,12 +34,12 @@ function PayRDpage() {
       }
     };
 
-    if (userAccountNumber) {
-      loadRD();
-    }
+    if (userAccountNumber) loadRD();
   }, [userAccountNumber, getRdData]);
 
-  // 🌌 Background animation
+  /* =========================
+     BACKGROUND ANIMATION
+  ========================== */
   useEffect(() => {
     if (!starsRef.current) return;
 
@@ -41,6 +51,9 @@ function PayRDpage() {
     });
   }, []);
 
+  /* =========================
+     HELPERS
+  ========================== */
   const getNextDueDate = (day) => {
     const d = new Date();
     d.setDate(day);
@@ -53,6 +66,80 @@ function PayRDpage() {
     setPayDate(new Date().toISOString().split("T")[0]);
   };
 
+  /* =========================
+     RAZORPAY PAYMENT
+  ========================== */
+  const handleConfirmPayment = async () => {
+    if (!selectedRD || !payAmount) return;
+
+    try {
+      setLoading(true);
+
+      // Load Razorpay SDK
+      const loaded = await loadRazorpay();
+      if (!loaded) {
+        alert("Razorpay SDK failed to load");
+        setLoading(false);
+        return;
+      }
+
+      // Create Order (backend)
+      const { data: order } = await Axios.post("/payment/createorder", {
+        amount: payAmount, // rupees
+        rdPaymentId: selectedRD.id, // reference
+      });
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
+        name: "RD System Bank",
+        description: `RD Installment - ${selectedRD.rd_number}`,
+        order_id: order.id,
+
+        handler: async (response) => {
+          const verifyRes = await Axios.post("/payment/verify", {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          });
+
+          alert(verifyRes.data.message);
+
+          // Reset UI
+          setSelectedRD(null);
+          setPayAmount("");
+          setPayDate("");
+        },
+
+        prefill: {
+          name: authUser?.fullname || "User",
+          contact: "9999999999",
+          email: authUser?.email || "test@example.com",
+        },
+
+        theme: {
+          color: "#16a34a",
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+
+      rzp.on("payment.failed", () => {
+        alert("Payment failed. Please try again.");
+      });
+    } catch (error) {
+      console.error("Payment error:", error);
+      alert("Something went wrong during payment");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* =========================
+     UI
+  ========================== */
   return (
     <div className="relative min-h-screen bg-[#020617] text-white py-20 px-4 overflow-hidden">
       {/* 🌌 BACKGROUND */}
@@ -75,7 +162,7 @@ function PayRDpage() {
           <p className="text-gray-400">View and pay your RD installments</p>
         </div>
 
-        {/* RD CARDS */}
+        {/* RD LIST */}
         <div className="grid md:grid-cols-2 gap-6">
           {rdList.map((rd) => (
             <div
@@ -127,6 +214,7 @@ function PayRDpage() {
               Pay RD – {selectedRD.rd_number}
             </h2>
 
+            {/* AMOUNT */}
             <div>
               <label className="text-sm text-gray-400 ml-1">
                 Amount to Pay
@@ -145,6 +233,7 @@ function PayRDpage() {
               </div>
             </div>
 
+            {/* DATE */}
             <div>
               <label className="text-sm text-gray-400 ml-1">Payment Date</label>
               <div className="relative mt-2">
@@ -161,12 +250,14 @@ function PayRDpage() {
               </div>
             </div>
 
+            {/* CONFIRM */}
             <button
-              type="button"
-              className="w-full bg-green-600 hover:bg-green-500 py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-3"
+              onClick={handleConfirmPayment}
+              disabled={loading}
+              className="w-full bg-green-600 hover:bg-green-500 disabled:opacity-50 py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-3"
             >
               <CreditCard size={20} />
-              Confirm Payment
+              {loading ? "Processing..." : "Confirm Payment"}
             </button>
           </div>
         )}
