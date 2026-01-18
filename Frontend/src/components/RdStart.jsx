@@ -2,7 +2,16 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
-import { IndianRupee, Calendar, ShieldCheck, ArrowRight } from "lucide-react";
+import {
+  IndianRupee,
+  Calendar,
+  ShieldCheck,
+  ArrowRight,
+  Clock,
+} from "lucide-react";
+
+import { useUserStore } from "../store/register.store";
+import AnimatedPage from "./AnimatedPage";
 
 function StartRDPlan() {
   const navigate = useNavigate();
@@ -10,43 +19,44 @@ function StartRDPlan() {
   const formRef = useRef(null);
 
   const [formData, setFormData] = useState({
-    rdTotalAmount: "",
-    rdStartDate: "",
-    rdPaymentDay: "",
+    rd_total_amount: "",
+    rd_start_date: "",
+    monthly_installment_day: "",
+    duration_months: "",
   });
 
-  useGSAP(
-    () => {
+  const { userAccountNumber, isStartingRd, startRD } = useUserStore();
+
+  useGSAP(() => {
+    if (starsRef.current) {
       gsap.to(starsRef.current, {
         backgroundPosition: "2000px 0",
         duration: 150,
         ease: "none",
         repeat: -1,
       });
+    }
 
-      gsap.from(".form-input", {
+    const formInputs = document.querySelectorAll(".form-input");
+    if (formInputs.length > 0) {
+      gsap.from(formInputs, {
         y: 20,
         opacity: 0,
         stagger: 0.08,
         duration: 0.8,
         ease: "power3.out",
       });
-    },
-    { scope: formRef }
-  );
+    }
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("RD Plan Data:", formData);
-
-    // fetch("/api/rd/start-plan", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify(formData),
-    // });
-
-    // navigate("/dashboard");
+    startRD(formData, userAccountNumber);
   };
+
+  if (isStartingRd) {
+    return <AnimatedPage />;
+  }
 
   return (
     <div className="relative min-h-screen bg-[#020617] text-white overflow-x-hidden py-20 px-4">
@@ -103,7 +113,10 @@ function StartRDPlan() {
                 placeholder="e.g. ₹12000"
                 className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-blue-500/50"
                 onChange={(e) =>
-                  setFormData({ ...formData, rdTotalAmount: e.target.value })
+                  setFormData({
+                    ...formData,
+                    rd_total_amount: e.target.value,
+                  })
                 }
               />
             </div>
@@ -122,7 +135,10 @@ function StartRDPlan() {
                 required
                 className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-blue-500/50 text-gray-300"
                 onChange={(e) =>
-                  setFormData({ ...formData, rdStartDate: e.target.value })
+                  setFormData({
+                    ...formData,
+                    rd_start_date: e.target.value,
+                  })
                 }
               />
             </div>
@@ -146,7 +162,37 @@ function StartRDPlan() {
                 placeholder="Day between 1–28"
                 className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-blue-500/50"
                 onChange={(e) =>
-                  setFormData({ ...formData, rdPaymentDay: e.target.value })
+                  setFormData({
+                    ...formData,
+                    monthly_installment_day: e.target.value,
+                  })
+                }
+              />
+            </div>
+          </div>
+
+          {/* RD TENURE */}
+          <div className="form-input space-y-2">
+            <label className="text-sm text-gray-400 ml-1">
+              RD Duration (Months)
+            </label>
+            <div className="relative">
+              <Clock
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500"
+                size={18}
+              />
+              <input
+                type="number"
+                min="6"
+                max="120"
+                required
+                placeholder="e.g. 12, 24, 36"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-blue-500/50"
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    duration_months: e.target.value,
+                  })
                 }
               />
             </div>

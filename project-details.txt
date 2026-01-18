@@ -43,3 +43,64 @@ the fields are require for register user  for rd
       occupation
 
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||      
+
+
+
+rd_accounts__>>>
+id SERIAL PRIMARY KEY,
+
+    rd_number VARCHAR(30) UNIQUE NOT NULL,     -- generated RD number
+
+    rduser_id INTEGER NOT NULL,                -- FK to rdusers
+
+    rd_total_amount NUMERIC(12,2) NOT NULL,    -- total RD value
+    paid_till_amount NUMERIC(12,2) DEFAULT 0,  -- how much paid so far
+
+    installment_amount NUMERIC(10,2) NOT NULL, -- monthly installment
+    duration_months INTEGER NOT NULL,          -- RD duration
+
+    rd_start_date DATE NOT NULL,               -- RD start date
+    monthly_installment_day INTEGER NOT NULL,  -- 1–28
+
+    is_completed BOOLEAN DEFAULT FALSE,        -- RD completed or not
+    is_settled BOOLEAN DEFAULT FALSE,           -- payout done or not
+
+    created_at TIMESTAMP DEFAULT NOW(),
+
+    CONSTRAINT fk_rd_user
+      FOREIGN KEY (rduser_id)
+      REFERENCES rdusers(id)
+      ON DELETE CASCADE,
+
+    CONSTRAINT chk_installment_day
+      CHECK (monthly_installment_day BETWEEN 1 AND 28),
+
+    CONSTRAINT chk_duration
+
+
+    const rdList = [
+    {
+      id: 1,
+      rd_number: "RD-2026-0001",
+      rd_total_amount: 24000,
+      paid_till_amount: 12000,
+      installment_amount: 1000,
+      monthly_installment_day: 10,
+    },
+    {
+      id: 2,
+      rd_number: "RD-2026-0002",
+      rd_total_amount: 18000,
+      paid_till_amount: 6000,
+      installment_amount: 1500,
+      monthly_installment_day: 5,
+    },
+    {
+      id: 3,
+      rd_number: "RD-2026-0003",
+      rd_total_amount: 12000,
+      paid_till_amount: 2000,
+      installment_amount: 1000,
+      monthly_installment_day: 15,
+    },
+  ];
