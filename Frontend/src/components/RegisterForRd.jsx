@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -22,10 +22,14 @@ import { useUserStore } from "../store/register.store";
 import AnimatedPage from "./AnimatedPage";
 import RdStart from "./RdStart.jsx";
 
+import { useAuthStore } from "../store/auth.store";
+
 function RegisterRD() {
   const navigate = useNavigate();
   const starsRef = useRef(null);
   const formRef = useRef(null);
+  
+  const { authUser } = useAuthStore();
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -37,25 +41,27 @@ function RegisterRD() {
     occupation: "",
   });
 
-  useGSAP(
-    () => {
+  useGSAP(() => {
+    if (starsRef.current) {
       gsap.to(starsRef.current, {
         backgroundPosition: "2000px 0",
         duration: 150,
         ease: "none",
         repeat: -1,
       });
+    }
 
-      gsap.from(".form-input", {
+    const formInputs = document.querySelectorAll(".form-input");
+    if (formInputs.length > 0) {
+      gsap.from(formInputs, {
         y: 20,
         opacity: 0,
         stagger: 0.05,
         duration: 0.8,
         ease: "power3.out",
       });
-    },
-    { scope: formRef }
-  );
+    }
+  });
 
   const {
     rdRegisterUser,
@@ -64,22 +70,34 @@ function RegisterRD() {
     userAccountNumber,
     isCheckingNomineeAddOrNot,
     isNomineeAdd,
+    isNominee,
+    addNomineeOrNot,
+    showStartRd,
   } = useUserStore();
+
+  useEffect(() => {
+    if (userAccountNumber) {
+      addNomineeOrNot(userAccountNumber);
+    }
+  }, [userAccountNumber]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     rdRegisterUser(formData);
   };
 
+  if (showStartRd) {
+    return <RdStart />;
+  }
+
   if (isRegistering || isCheckingNomineeAddOrNot) {
     return <AnimatedPage />;
   }
 
-  if (userAccountNumber || isEligibleAddNominee) {
-    return <AddNominee />;
-  }
-  if (isNomineeAdd) {
+  if (isNominee) {
     return <RdStart />;
+  } else if (userAccountNumber && isEligibleAddNominee) {
+    return <AddNominee />;
   }
 
   return (

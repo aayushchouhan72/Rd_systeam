@@ -22,7 +22,9 @@ function App() {
   }, []);
 
   useEffect(() => {
-    CheckuserisRegisterforrd(authUser);
+    if (authUser) {
+      CheckuserisRegisterforrd(authUser);
+    }
   }, [authUser]);
 
   if (ischecking || checkingUserRegister) {

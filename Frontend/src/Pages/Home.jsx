@@ -15,7 +15,6 @@ import {
 import { useAuthStore } from "../store/auth.store";
 import { useNavigate } from "react-router-dom";
 
-
 gsap.registerPlugin(ScrollTrigger);
 
 const Home = () => {
@@ -112,6 +111,8 @@ const Home = () => {
     },
     { scope: containerRef }
   );
+
+  const { isNominee } = useAuthStore();
   const navRegisterpage = () => {
     navigate("/home/registerforrd");
   };

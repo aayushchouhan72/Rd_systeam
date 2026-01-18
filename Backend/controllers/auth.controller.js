@@ -21,7 +21,7 @@ export const login = async (req, res) => {
 
     const result = await pool.query(
       "SELECT name, phone, email, password FROM users WHERE phone=$1 OR email=$2",
-      [phone || null, email || null]
+      [phone || null, email || null],
     );
 
     if (result.rows.length === 0) {
@@ -56,14 +56,14 @@ export const signup = async (req, res) => {
 
     //   Check all fileds are not empty
     if (!name || !password || !email || !phone) {
-      res.status(400).json({
+      return res.status(400).json({
         message: "ALL fileds are to required",
       });
     }
 
     //  Check password Lenght
     if (password.length < 8) {
-      res.status(400).json({
+      return res.status(400).json({
         message: "Password lenght should be geater then 8 and less than 15",
       });
     }
@@ -80,26 +80,24 @@ export const signup = async (req, res) => {
     // Check user exist email or not
     const checkEmail = await pool.query(
       "SELECT email from users where email=$1",
-      [email]
+      [email],
     );
 
     if (checkEmail.rows.length > 0) {
-      res.status(400).json({
+      return res.status(400).json({
         message: "All ready user Exist with this Give email",
       });
-      return;
     }
 
     // Check user Phone email or not
     const checkPhone = await pool.query(
       "SELECT email from users where phone=$1",
-      [phone]
+      [phone],
     );
     if (checkPhone.rows.length > 0) {
-      res.status(400).json({
+      return res.status(400).json({
         message: "All ready user Exist with this Give Phone number",
       });
-      return;
     }
 
     //  Hassed password
@@ -112,7 +110,7 @@ export const signup = async (req, res) => {
     //now save to db
     const response = await pool.query(
       "INSERT INTO users(name,password,phone,email,email_token) VALUES ($1,$2,$3,$4,$5) RETURNING name,password,phone,email,email_token",
-      [name, hassedPassword, phone, email, emailVerficationToken]
+      [name, hassedPassword, phone, email, emailVerficationToken],
     );
 
     //  SET COOKIES
@@ -125,7 +123,7 @@ export const signup = async (req, res) => {
     //  Get data with out password
     const userResult = await pool.query(
       "SELECT name, email, phone FROM users WHERE email = $1",
-      [response.rows[0].email]
+      [response.rows[0].email],
     );
     //  SEND SUCCESS RESPONSE TO USER
     res.status(201).json({
@@ -172,7 +170,7 @@ export const check = async (req, res) => {
 
     const findUser = await pool.query(
       "SELECT name,phone,email FROM users where email=$1",
-      [decode.email]
+      [decode.email],
     );
     // console.log(findUser);
     res.status(200).json({ data: findUser.rows[0], message: "User has token" });
@@ -197,7 +195,7 @@ export const verifyEmail = async (req, res) => {
          WHERE email_token = $1
          RETURNING email, is_verified
         `,
-      [token]
+      [token],
     );
 
     if (result.rows.length === 0) {
@@ -209,7 +207,7 @@ export const verifyEmail = async (req, res) => {
   } catch (error) {
     console.log(
       "Internal server error in verify mail contoller",
-      error.message
+      error.message,
     );
   }
 };

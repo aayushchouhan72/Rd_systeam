@@ -2,23 +2,34 @@ import React, { useState, useRef, useEffect } from "react";
 import { IndianRupee, Calendar, CreditCard } from "lucide-react";
 import { gsap } from "gsap";
 
+import { useUserStore } from "../store/register.store";
+
 function PayRDpage() {
   const starsRef = useRef(null);
-
-  // 🔹 TEMP UI STATE (backend baad me connect karna)
+  const [selectedRD, setSelectedRD] = useState(null);
   const [payAmount, setPayAmount] = useState("");
   const [payDate, setPayDate] = useState("");
+  const [rdList, setRdList] = useState([]);
+  const { userAccountNumber, getRdData } = useUserStore();
 
-  // 🔹 Dummy values (sirf UI ke liye)
-  const rdInfo = {
-    rdAccountNo: "RD-2024-00123",
-    totalAmount: 24000,
-    totalPaid: 12000,
-    dueAmount: 1000,
-    nextDueDate: "2026-02-10",
-  };
+  //  Intial useEffect to get rd data from the backend
+  useEffect(() => {
+    const loadRD = async () => {
+      try {
+        const data = await getRdData(userAccountNumber);
+        setRdList(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error(err);
+        setRdList([]);
+      }
+    };
 
-  // 🌌 Safe GSAP background animation
+    if (userAccountNumber) {
+      loadRD();
+    }
+  }, [userAccountNumber, getRdData]);
+
+  // 🌌 Background animation
   useEffect(() => {
     if (!starsRef.current) return;
 
@@ -29,6 +40,18 @@ function PayRDpage() {
       ease: "none",
     });
   }, []);
+
+  const getNextDueDate = (day) => {
+    const d = new Date();
+    d.setDate(day);
+    return d.toISOString().split("T")[0];
+  };
+
+  const handlePayClick = (rd) => {
+    setSelectedRD(rd);
+    setPayAmount(rd.installment_amount);
+    setPayDate(new Date().toISOString().split("T")[0]);
+  };
 
   return (
     <div className="relative min-h-screen bg-[#020617] text-white py-20 px-4 overflow-hidden">
@@ -45,89 +68,108 @@ function PayRDpage() {
         />
       </div>
 
-      <div className="relative z-10 max-w-3xl mx-auto space-y-10">
+      <div className="relative z-10 max-w-4xl mx-auto space-y-10">
         {/* HEADER */}
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-2">Pay RD Installment</h1>
-          <p className="text-gray-400">
-            Review your RD details and make a payment
-          </p>
+          <h1 className="text-4xl font-bold mb-2">My RD Accounts</h1>
+          <p className="text-gray-400">View and pay your RD installments</p>
         </div>
 
-        {/* RD INFO CARD */}
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 space-y-4">
-          <div className="flex justify-between">
-            <span className="text-gray-400">RD Account No</span>
-            <span className="font-semibold">{rdInfo.rdAccountNo}</span>
-          </div>
+        {/* RD CARDS */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {rdList.map((rd) => (
+            <div
+              key={rd.id}
+              className="bg-white/5 border border-white/10 rounded-3xl p-6 space-y-4"
+            >
+              <div className="flex justify-between">
+                <span className="text-gray-400">RD Number</span>
+                <span className="font-semibold">{rd.rd_number}</span>
+              </div>
 
-          <div className="flex justify-between">
-            <span className="text-gray-400">Total RD Amount</span>
-            <span>₹ {rdInfo.totalAmount}</span>
-          </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Total Amount</span>
+                <span>₹ {rd.rd_total_amount}</span>
+              </div>
 
-          <div className="flex justify-between">
-            <span className="text-gray-400">Amount Paid</span>
-            <span className="text-green-400">₹ {rdInfo.totalPaid}</span>
-          </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Paid Till Now</span>
+                <span className="text-green-400">₹ {rd.paid_till_amount}</span>
+              </div>
 
-          <div className="flex justify-between">
-            <span className="text-gray-400">Due This Month</span>
-            <span className="text-yellow-400">₹ {rdInfo.dueAmount}</span>
-          </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Monthly Installment</span>
+                <span className="text-yellow-400">
+                  ₹ {rd.installment_amount}
+                </span>
+              </div>
 
-          <div className="flex justify-between">
-            <span className="text-gray-400">Next Due Date</span>
-            <span>{rdInfo.nextDueDate}</span>
-          </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Next Due Date</span>
+                <span>{getNextDueDate(rd.monthly_installment_day)}</span>
+              </div>
+
+              <button
+                onClick={() => handlePayClick(rd)}
+                className="w-full mt-4 bg-blue-600 hover:bg-blue-500 py-3 rounded-2xl font-bold flex items-center justify-center gap-2"
+              >
+                <CreditCard size={18} />
+                Pay Installment
+              </button>
+            </div>
+          ))}
         </div>
 
-        {/* PAY FORM */}
-        <form className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6">
-          {/* AMOUNT */}
-          <div>
-            <label className="text-sm text-gray-400 ml-1">Amount to Pay</label>
-            <div className="relative mt-2">
-              <IndianRupee
-                size={18}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-400"
-              />
-              <input
-                type="number"
-                placeholder="Enter amount"
-                value={payAmount}
-                onChange={(e) => setPayAmount(e.target.value)}
-                className="w-full bg-white/10 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:border-blue-500/50"
-              />
-            </div>
-          </div>
+        {/* PAYMENT FORM */}
+        {selectedRD && (
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6">
+            <h2 className="text-2xl font-bold">
+              Pay RD – {selectedRD.rd_number}
+            </h2>
 
-          {/* PAYMENT DATE */}
-          <div>
-            <label className="text-sm text-gray-400 ml-1">Payment Date</label>
-            <div className="relative mt-2">
-              <Calendar
-                size={18}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-400"
-              />
-              <input
-                type="date"
-                value={payDate}
-                onChange={(e) => setPayDate(e.target.value)}
-                className="w-full bg-white/10 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:border-blue-500/50 text-gray-300"
-              />
+            <div>
+              <label className="text-sm text-gray-400 ml-1">
+                Amount to Pay
+              </label>
+              <div className="relative mt-2">
+                <IndianRupee
+                  size={18}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-400"
+                />
+                <input
+                  type="number"
+                  value={payAmount}
+                  onChange={(e) => setPayAmount(e.target.value)}
+                  className="w-full bg-white/10 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 outline-none"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* BUTTON */}
-          <button
-            type="button"
-            className="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-bold text-lg shadow-[0_0_20px_rgba(37,99,235,0.3)] flex items-center justify-center gap-3"
-          >
-            <CreditCard size={20} />
-            Proceed to Pay
-          </button>
-        </form>
+            <div>
+              <label className="text-sm text-gray-400 ml-1">Payment Date</label>
+              <div className="relative mt-2">
+                <Calendar
+                  size={18}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-400"
+                />
+                <input
+                  type="date"
+                  value={payDate}
+                  onChange={(e) => setPayDate(e.target.value)}
+                  className="w-full bg-white/10 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 outline-none"
+                />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="w-full bg-green-600 hover:bg-green-500 py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-3"
+            >
+              <CreditCard size={20} />
+              Confirm Payment
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

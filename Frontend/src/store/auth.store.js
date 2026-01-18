@@ -1,8 +1,7 @@
 import { create } from "zustand";
-
 import toast from "react-hot-toast";
-
 import Axios from "../utils/axios";
+import { useUserStore } from "./register.store";
 
 export const useAuthStore = create((set) => ({
   authUser: null,
@@ -40,10 +39,12 @@ export const useAuthStore = create((set) => ({
     try {
       await Axios.get("/auth/logout");
       set({ authUser: null });
+      useUserStore.getState().resetByUser();
       toast.success("Logged out successfully");
     } catch (error) {
       // Even if API fails, clear local state
       set({ authUser: null });
+      useUserStore.getState().resetByUser();
       toast.success("Logged out locally");
     }
   },
