@@ -16,18 +16,11 @@ import { useUserStore } from "./store/register.store.js";
 function App() {
   const navigate = useNavigate();
   const { authUser, ischecking, check, logout } = useAuthStore();
-  const { checkingUserRegister, CheckuserisRegisterforrd } = useUserStore();
   useEffect(() => {
     check();
   }, []);
 
-  useEffect(() => {
-    if (authUser) {
-      CheckuserisRegisterforrd(authUser);
-    }
-  }, [authUser]);
-
-  if (ischecking || checkingUserRegister) {
+  if (ischecking) {
     return <AnimatedPage />;
   }
 

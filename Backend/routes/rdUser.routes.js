@@ -7,6 +7,7 @@ import {
   checkUser,
   checkNominee,
   rdInfromation,
+  closeRdAccount,
 } from "../controllers/rdUser.controller.js";
 import { protectedRoutes } from "../middleware/CheckUserRegisterornot.js";
 
@@ -18,5 +19,6 @@ routes.get("/nomineeAdd/:accountNumber", checkNominee);
 routes.get("/rdinformation/:account_number", rdInfromation);
 routes.post("/addnominee/:account_number", protectedRoutes, addNomine);
 routes.post("/startrd/:account_number", protectedRoutes, startRd);
+routes.post("/close/:account_number", protectedRoutes, closeRdAccount);
 
 export default routes;

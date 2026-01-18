@@ -3,7 +3,11 @@ import {
   generateAccountNumber,
   generateRdNumber,
 } from "../lib/NumberGenrates.js";
-import { rdRegisterUserMail } from "../utils/sendVerificationEmail.js";
+import {
+  rdRegisterUserMail,
+  sendNomineeAddedEmail,
+  sendRdStartedEmail,
+} from "../utils/sendVerificationEmail.js";
 
 //  Register user for RD
 export const registerUser = async (req, res) => {
@@ -105,6 +109,20 @@ export const addNomine = async (req, res) => {
       [nominee.rows[0].id, account_number],
     );
 
+    // Send Email Notification
+    try {
+      const userQuery = await pool.query(
+        "SELECT fullname, email FROM rdusers WHERE account_number = $1",
+        [account_number]
+      );
+      if (userQuery.rows.length > 0) {
+        const { fullname, email } = userQuery.rows[0];
+        sendNomineeAddedEmail(email, fullname, name, account_number);
+      }
+    } catch (emailErr) {
+      console.error("Failed to send nominee email:", emailErr);
+    }
+
     // ✅ ONE response only
     return res.status(201).json({
       message: "Nominee added successfully",
@@ -187,6 +205,28 @@ export const startRd = async (req, res) => {
     //  Check data is Inserted or not in db
     if (!(saveToDb.rowCount > 0)) {
       return res.status(500).json("Probleam in backend to insert data in db");
+    }
+
+    // Send Email Notification
+    try {
+      const userQuery = await pool.query(
+        "SELECT fullname, email FROM rdusers WHERE account_number = $1",
+        [account_number]
+      );
+      if (userQuery.rows.length > 0) {
+        const { fullname, email } = userQuery.rows[0];
+        sendRdStartedEmail(
+          email,
+          fullname,
+          rd_number,
+          rd_total_amount,
+          installment_amount,
+          duration_months,
+          account_number
+        );
+      }
+    } catch (emailErr) {
+      console.error("Failed to send RD start email:", emailErr);
     }
 
     //  final Respone whene all things are fine
@@ -305,5 +345,66 @@ export const rdInfromation = async (req, res) => {
   } catch (error) {
     console.log("Error in the  RdInformation controller ", error.message);
     res.status(500).json({ message: "Internal server error is occured" });
+  }
+};
+
+export const closeRdAccount = async (req, res) => {
+  try {
+    const { account_number } = req.params;
+
+    if (!account_number) {
+      return res.status(400).json({ message: "Invalid user" });
+    }
+
+    // Get RD details
+    const rdQuery = await pool.query(
+      "SELECT * FROM rd_accounts WHERE account_number = $1",
+      [account_number]
+    );
+
+    if (rdQuery.rows.length === 0) {
+      return res.status(404).json({ message: "No RD account found" });
+    }
+
+    const rd = rdQuery.rows[0];
+    const {
+      rd_total_amount,
+      paid_till_amount,
+      duration_months,
+      installment_amount,
+    } = rd;
+
+    // Check completion status
+    const expectedTotal = parseFloat(rd_total_amount);
+    const paidAmount = parseFloat(paid_till_amount || 0);
+
+    let refundAmount = 0;
+    let message = "";
+
+    // Assuming completion if paid amount is close to total (or logic based on duration)
+    // Here logic: if paid < expectedTotal, it is premature closure.
+    if (paidAmount < expectedTotal) {
+      // 50% refund logic
+      refundAmount = paidAmount * 0.5;
+      message = "Premature Closure: 50% of paid amount refunded.";
+    } else {
+      // Maturity logic: Original + 14%
+      refundAmount = expectedTotal + expectedTotal * 0.14;
+      message = "Maturity Reached: Total Amount + 14% Interest refunded.";
+    }
+
+    return res.status(200).json({
+      message: "RD Closure Calculation",
+      closureDetails: {
+        account_number,
+        status: paidAmount < expectedTotal ? "Premature" : "Mature",
+        total_paid: paidAmount,
+        refund_amount: refundAmount,
+        note: message,
+      },
+    });
+  } catch (error) {
+    console.log("Error in closeRdAccount:", error.message);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

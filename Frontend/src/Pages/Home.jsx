@@ -13,19 +13,61 @@ import {
   LogOut,
 } from "lucide-react";
 import { useAuthStore } from "../store/auth.store";
+import { useUserStore } from "../store/register.store";
 import { useNavigate } from "react-router-dom";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const Home = () => {
   const { logout, authUser } = useAuthStore();
+  const {
+    CheckuserisRegisterforrd,
+    addNomineeOrNot,
+    userAccountNumber,
+    isNominee,
+    getRdData,
+  } = useUserStore();
+  
+  const [hasStartedRD, setHasStartedRD] = React.useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!authUser) {
       navigate("/login");
+    } else {
+      // Check registration status
+      CheckuserisRegisterforrd({ email: authUser.email });
     }
-  }, [authUser, navigate]);
+  }, [authUser, navigate, CheckuserisRegisterforrd]);
+
+  useEffect(() => {
+    // Check nominee and RD status if account number exists
+    if (userAccountNumber) {
+      addNomineeOrNot(userAccountNumber);
+      // Check if user has any active RDs to determine if we should hide 'Start RD' 
+      // (User requirement: "sari rd bharne ka baad..."). 
+      // Actually user said: "same register for rd ka liye bhi". 
+      // If registered -> hide Register button.
+      // If RD started -> hide Start RD button? Or maybe just allow multiple RDs?
+      // "ek baar nominee add karne ka baad add nominee wala component show nahi hona chaiye"
+      // I will assume logic: 
+      // !userAccountNumber -> Show Register
+      // userAccountNumber && !isNominee -> Show Add Nominee (if button existed, but flow is Register -> Nominee)
+      // userAccountNumber && isNominee -> Show Start RD 
+      // But if RD already started? The user might want multiple RDs. 
+      // However, "sari rd bharne ka baad repayent..." suggests a lifecycle. 
+      // For now, I will implementation: 
+      // 1. Hide Register if userAccountNumber exists.
+            
+      const checkRDs = async () => {
+        const rds = await getRdData(userAccountNumber);
+        if (rds && rds.length > 0) {
+           setHasStartedRD(true); 
+        }
+      };
+      checkRDs();
+    }
+  }, [userAccountNumber, addNomineeOrNot, getRdData]);
   const containerRef = useRef(null);
   const heroRef = useRef(null);
   const featuresRef = useRef(null);
@@ -112,7 +154,6 @@ const Home = () => {
     { scope: containerRef }
   );
 
-  const { isNominee } = useAuthStore();
   const navRegisterpage = () => {
     navigate("/home/registerforrd");
   };
@@ -157,18 +198,26 @@ const Home = () => {
             our futuristic recurring deposit platform.
           </p>
           <div className="hero-btns flex flex-wrap justify-center gap-4">
-            <button
-              onClick={navRegisterpage}
-              className="px-8 py-4 bg-blue-600 hover:bg-blue-500 transition-all rounded-xl font-bold shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] flex items-center gap-2"
-            >
-              Register for RD <ChevronRight size={20} />
-            </button>
-            <button
-              onClick={startRd}
-              className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-md transition-all rounded-xl font-bold"
-            >
-              Start Rd
-            </button>
+            {/* Show Register only if NOT registered */}
+            {!userAccountNumber && (
+              <button
+                onClick={navRegisterpage}
+                className="px-8 py-4 bg-blue-600 hover:bg-blue-500 transition-all rounded-xl font-bold shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] flex items-center gap-2"
+              >
+                Register for RD <ChevronRight size={20} />
+              </button>
+            )}
+
+            {/* Show Start RD only if Registered and Nominee Added */}
+            {userAccountNumber && isNominee && (
+              <button
+                onClick={startRd}
+                className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-md transition-all rounded-xl font-bold"
+              >
+                Start Rd
+              </button>
+            )}
+
             <button
               onClick={payrdhandle}
               className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-md transition-all rounded-xl font-bold"
