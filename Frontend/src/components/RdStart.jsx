@@ -95,7 +95,7 @@ function StartRDPlan() {
         {/* FORM */}
         <form
           onSubmit={handleSubmit}
-          className="grid grid-cols-1 gap-6 bg-white/[0.03] backdrop-blur-xl border border-white/10 p-8 md:p-12 rounded-[2.5rem] shadow-2xl"
+          className="grid grid-cols-1 gap-6 backdrop-blur-xl border border-white/10 p-8 md:p-12 rounded-[2.5rem] shadow-2xl"
         >
           {/* TOTAL AMOUNT */}
           <div className="form-input space-y-2">
