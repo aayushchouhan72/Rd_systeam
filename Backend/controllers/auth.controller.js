@@ -126,13 +126,13 @@ export const signup = async (req, res) => {
       [response.rows[0].email],
     );
     //  SEND SUCCESS RESPONSE TO USER
-    res.status(201).json({
+    return res.status(201).json({
       message: "Signup Succesfully",
       data: userResult.rows[0],
     });
   } catch (error) {
     console.error(error.message);
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
