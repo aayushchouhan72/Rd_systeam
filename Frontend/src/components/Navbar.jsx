@@ -1,0 +1,43 @@
+import React from "react";
+import { Menu } from "lucide-react";
+import { useState } from "react";
+
+function Navbar() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const isMenuOpened = menuOpen ? "flex" : "hidden";
+  return (
+    <div className="fixed top-0 left-0 z-50 w-full h-auto p-1 flex flex-col items-center justify-center">
+      <div className="w-full md:w-[70vw]  h-full bg-gray-300/40 backdrop-blur-md rounded-3xl  md:rounded-full flex px-4 py-5">
+        <div className="w-1/2 h-full px-4 flex items-center  font-extrabold ">
+          RD-Systeam
+        </div>
+        <div className="w-1/2 h-full  flex flex-row-reverse items-center  px-4">
+          <Menu
+            onClick={() => {
+              setMenuOpen(!menuOpen);
+            }}
+            className="font-bold"
+          />
+        </div>
+      </div>
+      <div
+        className={`${isMenuOpened} w-full rounded-3xl md:w-[70vw] h-auto bg-gray-300/40 backdrop-blur-md mt-2  flex flex-col transition-1000`}
+      >
+        <div className="text-center p-3 w-full">
+          <button className="w-full">Chat</button>
+        </div>
+        <div className="text-center p-3 w-full">
+          <button className="w-full">Profile</button>
+        </div>
+        <div className="text-center p-3 w-full">
+          <button className="w-full">About</button>
+        </div>
+        <div className="text-center p-3 w-full">
+          <button className="w-full">Home</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Navbar;
