@@ -3,16 +3,16 @@ import toast from "react-hot-toast";
 import Axios from "../utils/axios";
 import { useUserStore } from "./register.store";
 
-export const useAuthStore = create((set) => ({
+export const useAuthStore = create((set, get) => ({
   authUser: null,
   isLogining: false,
   isSignUping: false,
   ischecking: false,
-
   login: async (data) => {
     set({ isLogining: true });
     try {
       const res = await Axios.post("/auth/login", data);
+      console.log(res.data.user);
       set({ authUser: res.data.user });
       toast.success("Login successfully");
     } catch (error) {
@@ -54,6 +54,7 @@ export const useAuthStore = create((set) => ({
     try {
       const res = await Axios.get("/auth/check");
       set({ authUser: res.data.data });
+      return res.data.data;
     } catch (error) {
       set({ authUser: null });
     } finally {

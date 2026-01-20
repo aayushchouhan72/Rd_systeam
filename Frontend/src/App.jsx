@@ -3,6 +3,7 @@ import { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
+import socket from "./utils/socket.js";
 import Home from "./Pages/Home.jsx";
 import Login from "./Pages/Login.jsx";
 import Logout from "./components/Logout.jsx";
@@ -12,6 +13,7 @@ import RegisterRD from "./components/RegisterForRd.jsx";
 import AnimatedPage from "./components/AnimatedPage.jsx";
 import StartRDPlan from "./components/RdStart.jsx";
 import PayRDpage from "./components/PayRDpage.jsx";
+import Message from "./features_componets/invester_chat/Message.jsx";
 import { useUserStore } from "./store/register.store.js";
 function App() {
   const navigate = useNavigate();
@@ -48,6 +50,7 @@ function App() {
         <Route path="/home/registerforrd" element={<RegisterRD />} />
         <Route path="/home/startRd" element={<StartRDPlan />} />
         <Route path="/home/payRd" element={<PayRDpage />} />
+        <Route path="/home/investermessage" element={<Message />} />
       </Routes>
     </>
   );
