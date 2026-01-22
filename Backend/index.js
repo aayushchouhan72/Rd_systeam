@@ -6,6 +6,7 @@ import express from "express";
 import authRoutes from "./routes/auth.routes.js";
 import rdUserRoutes from "./routes/rdUser.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
+import messagesRoutes from "./routes/message.routes.js";
 
 import { app, server } from "./config/socket.js";
 
@@ -28,6 +29,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/rduser", rdUserRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/messages", messagesRoutes);
 
 // SERVER START
 server.listen(PORT, () => {
