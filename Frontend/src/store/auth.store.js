@@ -8,6 +8,7 @@ export const useAuthStore = create((set, get) => ({
   isLogining: false,
   isSignUping: false,
   ischecking: false,
+  isGetingProfileData: false,
   login: async (data) => {
     set({ isLogining: true });
     try {
@@ -59,6 +60,17 @@ export const useAuthStore = create((set, get) => ({
       set({ authUser: null });
     } finally {
       set({ ischecking: false });
+    }
+  },
+  getProfiledata: async (user) => {
+    set({ isGetingProfileData: true });
+    try {
+      const res = await Axios.get(`/auth/profile/${user}`);
+      return res?.data?.user;
+    } catch (error) {
+      console.log("error in getprofiledata");
+    } finally {
+      set({ isGetingProfileData: false });
     }
   },
 }));

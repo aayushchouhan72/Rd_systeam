@@ -13,8 +13,9 @@ import RegisterRD from "./components/RegisterForRd.jsx";
 import AnimatedPage from "./components/AnimatedPage.jsx";
 import StartRDPlan from "./components/RdStart.jsx";
 import PayRDpage from "./components/PayRDpage.jsx";
-import Message from "./features_componets/invester_chat/Message.jsx";
+import Message from "./features_componets/chat/Message.jsx";
 import { useUserStore } from "./store/register.store.js";
+import Profile from "./features_componets/profile-Section/Profile.jsx";
 function App() {
   const navigate = useNavigate();
   const { authUser, ischecking, check, logout } = useAuthStore();
@@ -51,6 +52,7 @@ function App() {
         <Route path="/home/startRd" element={<StartRDPlan />} />
         <Route path="/home/payRd" element={<PayRDpage />} />
         <Route path="/home/investermessage" element={<Message />} />
+        <Route path="/home/profile" element={<Profile />} />
       </Routes>
     </>
   );
