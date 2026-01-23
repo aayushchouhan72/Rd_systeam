@@ -66,7 +66,7 @@ function Navbar() {
           <button
             onClick={() => {
               setMenuOpen(!menuOpen);
-              navigate("/home");
+              navigate("/home/profile");
             }}
             className="w-full cursor-pointer"
           >

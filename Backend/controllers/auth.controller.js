@@ -211,3 +211,33 @@ export const verifyEmail = async (req, res) => {
     );
   }
 };
+
+//  Get Profile data form backend
+export const profileData = async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    //   Check user email
+    if (!email) {
+      return res.status(400).json({ message: "Invalid User" });
+    }
+
+    //  Search in data Base
+    const response = await pool.query(
+      "SELECT u.name, u.phone, u.email, u.is_verified, u.profileurl, r.account_number FROM users u LEFT JOIN rdusers r ON u.email = r.email WHERE u.email = $1",
+      [email],
+    );
+
+    if (!response.rows[0]) {
+      return res.status(400).json({ message: "Invalid user" });
+    }
+
+    //  Final respone
+    return res
+      .status(200)
+      .json({ user: response.rows[0], message: "User data is this" });
+  } catch (error) {
+    console.log("Error in the profiledata controller", error.message);
+    return res.status(500).json({ message: "Something Wents Wrong" });
+  }
+};
