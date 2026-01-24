@@ -21,10 +21,12 @@ function ChatRoom() {
     const initializeChat = async () => {
       if (authUser?.email) {
         // Fix: Await the response and set local state
-        const history = await getmessage(authUser.email);
-        if (Array.isArray(history)) {
-          setMessages(history);
-        }
+        setTimeout(async () => {
+          var history = await getmessage(authUser.email);
+          if (Array.isArray(history)) {
+            setMessages(history);
+          }
+        }, 2000);
       }
 
       socket.connect();

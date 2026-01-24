@@ -6,6 +6,8 @@ import pool from "../config/sql_connetdb.js";
 import { isStrongPassword } from "../lib/passwordStrength.js";
 import generateToken from "../lib/tokenGenrator.js";
 import { sendMail } from "../utils/sendVerificationEmail.js";
+import cloudinary from "../config/Cloudinary.js";
+import { runInContext } from "vm";
 
 //  Login Logic
 export const login = async (req, res) => {
@@ -239,5 +241,127 @@ export const profileData = async (req, res) => {
   } catch (error) {
     console.log("Error in the profiledata controller", error.message);
     return res.status(500).json({ message: "Something Wents Wrong" });
+  }
+};
+
+export const updateprofileData = async (req, res) => {
+  try {
+    const dataArr = req.body;
+    const { email } = req.params;
+
+    if (!Array.isArray(dataArr)) {
+      return res.status(400).json({ message: "Invalid data format" });
+    }
+
+    const name = dataArr?.[0]?.[1];
+    const phone = dataArr?.[1]?.[1];
+    const imageBase64 = dataArr?.[2]?.[1];
+
+    if (imageBase64) {
+      const uploadResponse = await cloudinary.uploader.upload(imageBase64);
+
+      await pool.query(
+        "UPDATE users SET profileurl=$1, name=$2, phone=$3 WHERE email=$4",
+        [uploadResponse.secure_url, name, phone, email],
+      );
+
+      return res.status(200).json({ message: "Profile updated successfully" });
+    }
+
+    const result = await pool.query(
+      "SELECT name, phone FROM users WHERE email=$1",
+      [email],
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (result.rows[0].name !== name) {
+      await pool.query("UPDATE users SET name=$1 WHERE email=$2", [
+        name,
+        email,
+      ]);
+    }
+
+    if (result.rows[0].phone !== phone) {
+      await pool.query("UPDATE users SET phone=$1 WHERE email=$2", [
+        phone,
+        email,
+      ]);
+    }
+
+    return res.status(200).json({ message: "Profile updated successfully" });
+  } catch (error) {
+    console.log("error in update profile controller", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+//  Get nominee data
+export const getNomineeData = async (req, res) => {
+  try {
+    const { account_number } = req.user;
+
+    if (!account_number) {
+      return res.status(401).json({ message: "Unauthorized user" });
+    }
+
+    const result = await pool.query(
+      `
+      SELECT 
+        rd.account_number,
+        no.name,
+        no.adharno,
+        no.panno,
+        no.contact
+      FROM rdusers rd
+      LEFT JOIN nominee no ON no.id = rd.nominee_id
+      WHERE rd.account_number = $1
+      `,
+      [account_number],
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Account not found" });
+    }
+
+    return res.status(200).json({
+      data: result.rows[0], // may contain nulls
+      message: "Nominee data fetched successfully",
+    });
+  } catch (error) {
+    console.error("Error in getNomineeData:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+//  Edit Nominee
+export const editNomineeData = async (req, res) => {
+  try {
+    const { name, contact, panno, adharno, address } = req.body;
+    const { email } = req.params;
+    if (!name || !contact || !panno || !adharno || !address) {
+      return res.status(400).json("Invalid Request from user");
+    }
+
+    //  update user in the db
+    const result = await pool.query(
+      "UPDATE nominee n SET name=$1, contact=$2, address=$3, panno=$4, adharno=$5 FROM rdusers r WHERE r.nominee_id=n.id AND r.email=$6 RETURNING n.*",
+      [name, contact, panno, adharno, address, email],
+    );
+
+    //  Check result
+    if (result.rows[0] > 0) {
+      return res.status(400).json({ message: "probleam in db" });
+    }
+
+    //  final response to the user
+    return res
+      .status(200)
+      .json({ message: "changes done", data: result.rows[0] });
+  } catch (error) {
+    console.log("Error in update nominee controller", error.message);
+    return res.status(500).json({ message: "Somthing went wrong" });
   }
 };

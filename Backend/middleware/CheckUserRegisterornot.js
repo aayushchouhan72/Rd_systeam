@@ -2,11 +2,11 @@ import pool from "../config/sql_connetdb.js";
 
 export const protectedRoutes = async (req, res, next) => {
   try {
-    const { account_number } = req.params;
+    const { account_number, email } = req.params;
 
     const userCheck = await pool.query(
-      "SELECT id FROM rdusers WHERE account_number = $1",
-      [account_number]
+      "SELECT id,account_number FROM rdusers WHERE account_number = $1 or email=$2",
+      [account_number, email],
     );
 
     if (userCheck.rowCount === 0) {
