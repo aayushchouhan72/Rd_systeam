@@ -314,6 +314,7 @@ export const getNomineeData = async (req, res) => {
         no.name,
         no.adharno,
         no.panno,
+        no.address,
         no.contact
       FROM rdusers rd
       LEFT JOIN nominee no ON no.id = rd.nominee_id

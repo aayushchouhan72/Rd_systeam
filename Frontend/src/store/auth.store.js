@@ -105,6 +105,7 @@ export const useAuthStore = create((set, get) => ({
       set({ isEditingNominee: true });
       const res = await Axios.post(`/auth/editnominee/${user}`, data);
       return res?.data?.data;
+      toast.success("Nominee updated sucessfully");
     } catch (error) {
       console.log("Error in the editnominee", error.message);
     } finally {
