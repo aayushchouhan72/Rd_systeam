@@ -25,7 +25,7 @@ function NomineeCard() {
 
   const [isEditing, setIsEditing] = useState(false);
 
-  /* ================= FETCH DATA ================= */
+  /* ================= FETCH NOMINEE ================= */
   useEffect(() => {
     if (!authUser?.email) return;
 
@@ -33,20 +33,22 @@ function NomineeCard() {
       try {
         const res = await getNomineedata(authUser.email);
 
+        if (!res) return;
+
         setNomineeData({
-          name: res?.name ?? "",
-          contact: res?.contact ?? "",
-          address: res?.address ?? "",
-          panno: res?.panno ?? "",
-          adharno: res?.adharno ?? "",
+          name: res.name || "",
+          contact: res.contact || "",
+          address: res.address || "",
+          panno: res.panno || "",
+          adharno: res.adharno || "",
         });
       } catch (error) {
-        console.error("Failed to load nominee");
+        console.error("Failed to fetch nominee:", error);
       }
     };
 
     fetchNominee();
-  }, [authUser?.email]);
+  }, [authUser?.email, getNomineedata]);
 
   /* ================= INPUT HANDLER ================= */
   const handleChange = (e) => {
@@ -63,21 +65,10 @@ function NomineeCard() {
     e.preventDefault();
 
     try {
-      const res = await editNominee(nomineeData, authUser.email);
-
-      if (!res) return;
-
-      setNomineeData({
-        name: res?.name ?? "",
-        contact: res?.contact ?? "",
-        address: res?.address ?? "",
-        panno: res?.panno ?? "",
-        adharno: res?.adharno ?? "",
-      });
-
+      await editNominee(nomineeData, authUser.email);
       setIsEditing(false);
     } catch (error) {
-      console.error("Edit nominee failed");
+      console.error("Edit nominee failed:", error);
     }
   };
 

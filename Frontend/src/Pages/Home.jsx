@@ -27,7 +27,7 @@ const Home = () => {
     isNominee,
     getRdData,
   } = useUserStore();
-  
+
   const [hasStartedRD, setHasStartedRD] = React.useState(false);
   const navigate = useNavigate();
 
@@ -44,25 +44,11 @@ const Home = () => {
     // Check nominee and RD status if account number exists
     if (userAccountNumber) {
       addNomineeOrNot(userAccountNumber);
-      // Check if user has any active RDs to determine if we should hide 'Start RD' 
-      // (User requirement: "sari rd bharne ka baad..."). 
-      // Actually user said: "same register for rd ka liye bhi". 
-      // If registered -> hide Register button.
-      // If RD started -> hide Start RD button? Or maybe just allow multiple RDs?
-      // "ek baar nominee add karne ka baad add nominee wala component show nahi hona chaiye"
-      // I will assume logic: 
-      // !userAccountNumber -> Show Register
-      // userAccountNumber && !isNominee -> Show Add Nominee (if button existed, but flow is Register -> Nominee)
-      // userAccountNumber && isNominee -> Show Start RD 
-      // But if RD already started? The user might want multiple RDs. 
-      // However, "sari rd bharne ka baad repayent..." suggests a lifecycle. 
-      // For now, I will implementation: 
-      // 1. Hide Register if userAccountNumber exists.
-            
+
       const checkRDs = async () => {
         const rds = await getRdData(userAccountNumber);
         if (rds && rds.length > 0) {
-           setHasStartedRD(true); 
+          setHasStartedRD(true);
         }
       };
       checkRDs();
@@ -106,7 +92,7 @@ const Home = () => {
             duration: 1,
             ease: "back.out(1.7)",
           },
-          "-=0.5"
+          "-=0.5",
         );
 
       // 3. Features Card Reveal
@@ -151,7 +137,7 @@ const Home = () => {
         ease: "power4.out",
       });
     },
-    { scope: containerRef }
+    { scope: containerRef },
   );
 
   const navRegisterpage = () => {
