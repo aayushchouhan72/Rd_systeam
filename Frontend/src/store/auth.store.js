@@ -9,6 +9,9 @@ export const useAuthStore = create((set, get) => ({
   isSignUping: false,
   ischecking: false,
   isGetingProfileData: false,
+  isUpdatingProfile: false,
+  isGetinNomineeData: false,
+  isEditingNominee: false,
   login: async (data) => {
     set({ isLogining: true });
     try {
@@ -22,7 +25,6 @@ export const useAuthStore = create((set, get) => ({
       set({ isLogining: false });
     }
   },
-
   signup: async (data) => {
     set({ isSignUping: true });
     try {
@@ -35,7 +37,6 @@ export const useAuthStore = create((set, get) => ({
       set({ isSignUping: false });
     }
   },
-
   logout: async () => {
     try {
       await Axios.get("/auth/logout");
@@ -49,7 +50,6 @@ export const useAuthStore = create((set, get) => ({
       toast.success("Logged out locally");
     }
   },
-
   check: async () => {
     set({ ischecking: true });
     try {
@@ -71,6 +71,44 @@ export const useAuthStore = create((set, get) => ({
       console.log("error in getprofiledata");
     } finally {
       set({ isGetingProfileData: false });
+    }
+  },
+  updataProfile: async (data, user) => {
+    set({ isUpdatingProfile: true });
+    try {
+      const res = await Axios.post(`/auth/updateprofile/${user}`, [
+        ...data.entries(),
+      ]);
+    } catch (error) {
+      console.log("Error in the updating profile", error.message);
+    } finally {
+      set({ isUpdatingProfile: false });
+    }
+  },
+  getNomineedata: async (user) => {
+    if (!user) return null;
+
+    set({ isGetinNomineeData: true });
+    try {
+      const response = await Axios.get(`/auth/getnomineedata/${user}`);
+      return response?.data?.data;
+    } catch (error) {
+      console.log("Error in the getNominee data", error.message);
+      return null;
+    } finally {
+      set({ isGetinNomineeData: false });
+    }
+  },
+  editNominee: async (data, user) => {
+    if (!data || !user) return;
+    try {
+      set({ isEditingNominee: true });
+      const res = await Axios.post(`/auth/editnominee/${user}`, data);
+      return res?.data?.data;
+    } catch (error) {
+      console.log("Error in the editnominee", error.message);
+    } finally {
+      set({ isEditingNominee: false });
     }
   },
 }));
