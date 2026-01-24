@@ -4,7 +4,7 @@ import { useGSAP } from "@gsap/react";
 
 import NomineeCard from "./NomineeCard";
 
-function Nominee() {
+const Nominee = () => {
   const starsRef = useRef(null);
 
   useGSAP(() => {
@@ -41,6 +41,6 @@ function Nominee() {
       </div>
     </div>
   );
-}
+};
 
 export default Nominee;
