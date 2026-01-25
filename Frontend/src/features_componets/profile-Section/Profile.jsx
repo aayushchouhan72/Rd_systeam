@@ -1,22 +1,21 @@
-import React, { useRef, useEffect, useState } from "react";
-import gsap from "gsap";
+import React, { useEffect, useState, useRef } from "react";
 import { useGSAP } from "@gsap/react";
-
+import gsap from "gsap";
 import ProfileCard from "./ProfileCard.jsx";
 
-function Profile() {
+const Profile = () => {
   const starsRef = useRef(null);
-
   useGSAP(() => {
-    if (!starsRef.current) return;
+    if (starsRef.current) {
+      gsap.to(starsRef.current, {
+        backgroundPosition: "2000px 0",
+        duration: 150,
+        ease: "none",
+        repeat: -1,
+      });
+    }
+  });
 
-    gsap.to(starsRef.current, {
-      backgroundPosition: "2000px 0",
-      duration: 150,
-      ease: "none",
-      repeat: -1,
-    });
-  }, []);
   return (
     <div className="relative min-h-screen bg-[#020617] text-white overflow-hidden">
       {/* 🌌 GALAXY BACKGROUND */}
@@ -33,14 +32,14 @@ function Profile() {
         />
       </div>
 
-      {/* 🧩 PROFILE CARD CENTER */}
+      {/* 🧩 CENTER CHAT BOX */}
       <div className="relative z-10 min-h-screen flex items-center justify-center px-4">
-        <div className="w-full max-w-4xl flex justify-center">
+        <div className="w-full max-w-4xl flex  justify-center items-center">
           <ProfileCard />
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default Profile;

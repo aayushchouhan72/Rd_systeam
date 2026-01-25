@@ -44,6 +44,10 @@ const Home = () => {
     // Check nominee and RD status if account number exists
     if (userAccountNumber) {
       addNomineeOrNot(userAccountNumber);
+<<<<<<< HEAD
+
+=======
+>>>>>>> aayush
       const checkRDs = async () => {
         const rds = await getRdData(userAccountNumber);
         if (rds && rds.length > 0) {
