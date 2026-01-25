@@ -186,3 +186,5 @@ function NomineeCard() {
     </>
   );
 }
+
+export default NomineeCard;
