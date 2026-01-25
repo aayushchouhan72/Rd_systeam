@@ -15,6 +15,7 @@ import StartRDPlan from "./components/RdStart.jsx";
 import PayRDpage from "./components/PayRDpage.jsx";
 import Message from "./features_componets/chat/Message.jsx";
 import { useUserStore } from "./store/register.store.js";
+import Withdraw from "./features_componets/Withdraw/Withdraw.jsx";
 import Profile from "./features_componets/profile-Section/Profile.jsx";
 import Nominee from "./features_componets/Nominee/Nominee.jsx";
 function App() {
@@ -55,6 +56,7 @@ function App() {
         <Route path="/home/investermessage" element={<Message />} />
         <Route path="/home/profile" element={<Profile />} />
         <Route path="/home/profile/nominee" element={<Nominee />} />
+        <Route path="/home/withdraw" element={<Withdraw />} />
       </Routes>
     </>
   );

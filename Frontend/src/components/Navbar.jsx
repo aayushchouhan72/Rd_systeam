@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Menu } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router";
 
@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 
 function Navbar() {
   const navigate = useNavigate();
+  const { logout } = useAuthStore();
   //    Menu  display or not
   const [menuOpen, setMenuOpen] = useState(false);
   const isMenuOpened = menuOpen ? "flex" : "hidden";
@@ -93,6 +94,11 @@ function Navbar() {
             className="w-full cursor-pointer"
           >
             Home
+          </button>
+        </div>
+        <div className="text-center p-3 w-full">
+          <button onClick={logout} className="w-full cursor-pointer">
+            Logout
           </button>
         </div>
       </div>

@@ -44,7 +44,10 @@ const Home = () => {
     // Check nominee and RD status if account number exists
     if (userAccountNumber) {
       addNomineeOrNot(userAccountNumber);
+<<<<<<< HEAD
 
+=======
+>>>>>>> aayush
       const checkRDs = async () => {
         const rds = await getRdData(userAccountNumber);
         if (rds && rds.length > 0) {
@@ -149,6 +152,9 @@ const Home = () => {
   const payrdhandle = () => {
     navigate("/home/payRd");
   };
+  const handlewithdraw = () => {
+    navigate("/home/withdraw");
+  };
 
   return (
     <div
@@ -211,10 +217,10 @@ const Home = () => {
               payRd
             </button>
             <button
-              onClick={logout}
-              className="px-8 py-4 bg-red-600 hover:bg-red-500 transition-all rounded-xl font-bold shadow-[0_0_20px_rgba(220,38,38,0.4)] hover:shadow-[0_0_30px_rgba(220,38,38,0.6)] flex items-center gap-2"
+              onClick={handlewithdraw}
+              className="px-8 py-4 bg-green-600 hover:bg-green-500 transition-all rounded-xl font-bold flex items-center gap-2"
             >
-              <LogOut size={20} /> Logout
+              Withdraw amount
             </button>
           </div>
         </section>

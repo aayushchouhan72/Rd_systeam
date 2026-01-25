@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 import Axios from "../utils/axios";
+import toast from "react-hot-toast";
 
 export const useUserStore = create((set) => ({
   isRegistering: false,
@@ -114,5 +115,14 @@ export const useUserStore = create((set) => ({
       isStartingRd: false,
       showStartRd: false,
     });
+  },
+  getwithDrawData: async (user) => {
+    try {
+      console.log(user);
+      const res = await Axios.get(`/rduser/rdpayback/${user}`);
+      return res?.data?.data;
+    } catch (error) {
+      console.log("Error in the getwithDrawdata function", error.message);
+    }
   },
 }));

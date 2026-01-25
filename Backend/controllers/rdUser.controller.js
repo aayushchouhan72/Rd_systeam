@@ -113,7 +113,7 @@ export const addNomine = async (req, res) => {
     try {
       const userQuery = await pool.query(
         "SELECT fullname, email FROM rdusers WHERE account_number = $1",
-        [account_number]
+        [account_number],
       );
       if (userQuery.rows.length > 0) {
         const { fullname, email } = userQuery.rows[0];
@@ -211,7 +211,7 @@ export const startRd = async (req, res) => {
     try {
       const userQuery = await pool.query(
         "SELECT fullname, email FROM rdusers WHERE account_number = $1",
-        [account_number]
+        [account_number],
       );
       if (userQuery.rows.length > 0) {
         const { fullname, email } = userQuery.rows[0];
@@ -222,7 +222,7 @@ export const startRd = async (req, res) => {
           rd_total_amount,
           installment_amount,
           duration_months,
-          account_number
+          account_number,
         );
       }
     } catch (emailErr) {
@@ -244,13 +244,6 @@ export const startRd = async (req, res) => {
 //  Check uses
 export const checkUser = async (req, res) => {
   try {
-    // ✅ Safety check
-    // if (!req.body) {
-    //   return res.status(400).json({
-    //     message: "Request body is missing",
-    //   });
-    // }
-
     const { email } = req.body;
 
     if (!email) {
@@ -359,7 +352,7 @@ export const closeRdAccount = async (req, res) => {
     // Get RD details
     const rdQuery = await pool.query(
       "SELECT * FROM rd_accounts WHERE account_number = $1",
-      [account_number]
+      [account_number],
     );
 
     if (rdQuery.rows.length === 0) {
@@ -406,5 +399,35 @@ export const closeRdAccount = async (req, res) => {
   } catch (error) {
     console.log("Error in closeRdAccount:", error.message);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const payBackstatus = async (req, res) => {
+  try {
+    const { account_number } = req.params;
+
+    //  Check account number
+    if (!account_number) {
+      return res.status(400).json({ message: "Invalid request from User" });
+    }
+
+    // find user rd
+    const result = await pool.query(
+      "SELECT * FROM rd_accounts WHERE account_number= $1",
+      [account_number],
+    );
+
+    //   Check result from db
+    if (!result.rows) {
+      return res.status(500).json({ message: "Something broken internally" });
+    }
+
+    //  final response to users
+    return res
+      .status(200)
+      .json({ message: "Users data is this ..", data: result.rows });
+  } catch (error) {
+    console.log("Error in the payBack controller", error.message);
+    return res.status(500).json({ message: "Somethings wents wrongs" });
   }
 };
