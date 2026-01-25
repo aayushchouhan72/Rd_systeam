@@ -16,7 +16,6 @@ export const useAuthStore = create((set, get) => ({
     set({ isLogining: true });
     try {
       const res = await Axios.post("/auth/login", data);
-      console.log(res.data.user);
       set({ authUser: res.data.user });
       toast.success("Login successfully");
     } catch (error) {
