@@ -244,6 +244,7 @@ export const profileData = async (req, res) => {
   }
 };
 
+//  Edit profileap
 export const updateprofileData = async (req, res) => {
   try {
     const dataArr = req.body;
